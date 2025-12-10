@@ -19,7 +19,7 @@ Script Python completo para transcripción de audio con WhisperX, similar a [Rep
 source ~/whisperx_env/bin/activate
 
 # Si no lo tienes, sigue la guía de instalación:
-# https://github.com/TU_USUARIO/ai-tools-ubuntu-setup/blob/main/whisperx/INSTALACION_WHISPERX.md
+# https://github.com/edgardozavala/ai-tools-ubuntu-setup/blob/main/whisperx/INSTALACION_WHISPERX.md
 ```
 
 ## 🚀 Uso Rápido
