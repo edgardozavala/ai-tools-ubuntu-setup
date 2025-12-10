@@ -24,11 +24,7 @@ Instalar herramientas de IA modernas (WhisperX, Stable Diffusion, LLMs, etc.) en
 - **[Ver Guía](./whisperx/INSTALACION_WHISPERX.md)**
 
 ### 🔜 Próximamente
-- Stable Diffusion WebUI (AUTOMATIC1111)
-- Ollama con aceleración CUDA
-- Text Generation WebUI (oobabooga)
-- ComfyUI para Stable Diffusion
-- LangChain con modelos locales
+- No lo sé
 
 ## 🖥️ Sistemas Soportados
 
