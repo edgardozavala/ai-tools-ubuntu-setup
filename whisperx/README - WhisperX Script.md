@@ -282,7 +282,7 @@ En una **RTX 3060 (12GB VRAM)**:
 
 ## 🤝 Contribuir
 
-Este script es parte del repositorio [ai-tools-ubuntu-setup](https://github.com/TU_USUARIO/ai-tools-ubuntu-setup).
+Este script es parte del repositorio [ai-tools-ubuntu-setup](https://github.com/edgardozavala/ai-tools-ubuntu-setup).
 
 Mejoras bienvenidas:
 - [ ] Soporte para múltiples archivos en batch
