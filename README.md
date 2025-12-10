@@ -43,18 +43,3 @@ Instalar herramientas de IA modernas (WhisperX, Stable Diffusion, LLMs, etc.) en
 ## 🤝 Contribuciones
 
 ¿Lograste instalar algo después de mucho sufrimiento? ¡Comparte tu conocimiento!
-
-1. Fork el repositorio
-2. Crea una rama: `git checkout -b guia/nombre-herramienta`
-3. Documenta tu instalación siguiendo el formato existente
-4. Incluye la configuración exacta que funcionó
-5. Envía un Pull Request
-
-**Formato requerido para nuevas guías:**
-- Sistema operativo y versión exacta
-- Hardware (GPU, RAM, etc.)
-- Versiones específicas de todas las dependencias
-- Comandos completos (copy-paste friendly)
-- Sección de troubleshooting con errores reales
-
-## 📖 Estructura del Repositorio
