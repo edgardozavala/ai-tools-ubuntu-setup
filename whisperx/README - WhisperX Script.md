@@ -24,7 +24,7 @@ source ~/whisperx_env/bin/activate
 
 ## 🚀 Uso Rápido
 
-### Transcripción básica
+### Transcripción básica (rápida, sin alineación)
 
 ```bash
 python whisperx_script.py audio.mp3
@@ -35,6 +35,13 @@ python whisperx_script.py audio.mp3
 - `output/audio.txt` - Solo texto
 - `output/audio.srt` - Subtítulos formato SRT
 - `output/audio.vtt` - Subtítulos formato WebVTT
+
+### Con alineación precisa de timestamps
+
+```bash
+# Alineación = timestamps a nivel de palabra (más lento pero más preciso)
+python whisperx_script.py audio.mp3 --align
+```
 
 ### Con idioma específico (más rápido)
 
@@ -66,13 +73,28 @@ python whisperx_script.py audio.mp3 --diarize --hf-token YOUR_HF_TOKEN
 ```bash
 python whisperx_script.py podcast.mp3 \
   --language es \
+  --align \
   --diarize \
   --hf-token YOUR_TOKEN \
   --min-speakers 2 \
   --max-speakers 4
 ```
 
-### 2. Video de YouTube (usando audio extraído)
+### 2. Audio con mucho ruido o silencios (ajustar VAD)
+
+```bash
+# VAD más sensible (detecta voz más fácilmente)
+python whisperx_script.py audio_con_ruido.mp3 \
+  --vad-onset 0.3 \
+  --vad-offset 0.2
+
+# VAD menos sensible (ignora ruido de fondo)
+python whisperx_script.py audio_limpio.mp3 \
+  --vad-onset 0.7 \
+  --vad-offset 0.5
+```
+
+### 3. Video de YouTube (usando audio extraído)
 
 ```bash
 # Primero extrae el audio con ffmpeg o yt-dlp
@@ -126,8 +148,17 @@ Opciones de hardware:
   --device              cuda o cpu
   --compute-type        float16, int8, float32
   
+Opciones de VAD (Voice Activity Detection):
+  --vad-onset           Umbral de inicio de voz (0.0-1.0, default: 0.500)
+                        • Valores bajos (0.2-0.4): Más sensible, detecta más voz
+                        • Valores altos (0.6-0.8): Menos sensible, ignora ruido
+  --vad-offset          Umbral de fin de voz (0.0-1.0, default: 0.363)
+                        • Valores bajos: Mantiene audio más tiempo
+                        • Valores altos: Corta silencios más rápido
+  
 Opciones de alineación:
-  --no-align            Deshabilitar alineación de timestamps
+  --align               Activar alineación de timestamps a nivel de palabra
+                        (más lento pero timestamps más precisos)
   
 Opciones de diarización:
   --diarize             Activar identificación de hablantes
@@ -240,6 +271,28 @@ for segment in result["segments"]:
 
 ## 🐛 Solución de Problemas
 
+### Audio con mucho ruido de fondo
+```bash
+# Ajusta los umbrales VAD para ser menos sensible
+python whisperx_script.py audio_ruidoso.mp3 \
+  --vad-onset 0.7 \
+  --vad-offset 0.5
+```
+
+### Audio muy silencioso o con pausas largas
+```bash
+# Ajusta los umbrales VAD para ser más sensible
+python whisperx_script.py audio_silencioso.mp3 \
+  --vad-onset 0.3 \
+  --vad-offset 0.2
+```
+
+### Timestamps imprecisos
+```bash
+# Activa la alineación (más lento pero más preciso)
+python whisperx_script.py audio.mp3 --align --language es
+```
+
 ### Error: CUDA out of memory
 ```bash
 # Reduce el batch_size
@@ -260,8 +313,9 @@ python whisperx_script.py audio.mp3 --diarize --hf-token hf_xxxxxxxxxxxxx
 ### Error: Alineación no disponible
 ```bash
 # Algunos idiomas no tienen modelos de alineación
-# Usa --no-align para deshabilitar
-python whisperx_script.py audio.mp3 --no-align
+# La alineación está desactivada por defecto para mayor velocidad
+# Solo actívala si necesitas timestamps muy precisos
+python whisperx_script.py audio.mp3  # Sin --align es más rápido
 ```
 
 ### Audio muy largo (>2 horas)
@@ -276,9 +330,44 @@ python whisperx_script.py audio_largo.mp3 \
 
 En una **RTX 3060 (12GB VRAM)**:
 
+### Sin alineación (modo rápido, default):
+- **Audio de 10 minutos**: ~20 segundos (sin diarización), ~45 segundos (con diarización)
+- **Audio de 1 hora**: ~2-3 minutos (sin diarización), ~6-8 minutos (con diarización)
+
+### Con alineación (--align):
 - **Audio de 10 minutos**: ~30 segundos (sin diarización), ~60 segundos (con diarización)
 - **Audio de 1 hora**: ~3-5 minutos (sin diarización), ~8-10 minutos (con diarización)
-- **Modelo large-v3**: ~70x tiempo real con batch_size=16
+
+**Modelo large-v3**: ~70x tiempo real con batch_size=16
+
+## 🎛️ Guía de Parámetros VAD
+
+Los parámetros `vad_onset` y `vad_offset` controlan la detección de actividad de voz:
+
+### vad_onset (inicio de voz)
+- **0.3-0.4**: Audio con mucho ruido, susurros, o voces lejanas
+- **0.5** (default): Balance estándar
+- **0.6-0.7**: Audio limpio en estudio, reducir falsas detecciones
+
+### vad_offset (fin de voz)
+- **0.2-0.3**: Mantener pausas naturales, respiraciones
+- **0.363** (default): Balance estándar
+- **0.5-0.6**: Cortar silencios largos más agresivamente
+
+### Ejemplos prácticos:
+```bash
+# Podcast en estudio (limpio)
+--vad-onset 0.6 --vad-offset 0.5
+
+# Entrevista con ruido de fondo
+--vad-onset 0.4 --vad-offset 0.3
+
+# Grabación telefónica (baja calidad)
+--vad-onset 0.3 --vad-offset 0.2
+
+# Presentación con pausas largas
+--vad-onset 0.5 --vad-offset 0.5
+```
 
 ## 🤝 Contribuir
 
