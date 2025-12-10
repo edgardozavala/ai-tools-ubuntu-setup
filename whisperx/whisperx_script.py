@@ -23,8 +23,11 @@ def transcribe_audio(
     batch_size: int = 16,
     language: Optional[str] = None,
     task: Literal["transcribe", "translate"] = "transcribe",
+    # VAD (Voice Activity Detection)
+    vad_onset: float = 0.500,
+    vad_offset: float = 0.363,
     # Alineación
-    align_output: bool = True,
+    align_output: bool = False,  # False por defecto para ser más rápido
     # Diarización
     enable_diarization: bool = False,
     hf_token: Optional[str] = None,
@@ -46,7 +49,9 @@ def transcribe_audio(
         batch_size: Tamaño de lote para procesamiento
         language: Código de idioma (es, en, fr, etc.) o None para detección automática
         task: "transcribe" o "translate" (traducir a inglés)
-        align_output: Activar alineación para timestamps precisos
+        vad_onset: Umbral de inicio de voz (0.0-1.0, default: 0.500). Valores más bajos = más sensible
+        vad_offset: Umbral de fin de voz (0.0-1.0, default: 0.363). Valores más bajos = mantiene audio más tiempo
+        align_output: Activar alineación para timestamps precisos (default: False)
         enable_diarization: Activar identificación de hablantes
         hf_token: Token de Hugging Face para diarización
         min_speakers: Número mínimo de hablantes
@@ -70,6 +75,8 @@ def transcribe_audio(
         print(f"🖥️  Device: {device}")
         print(f"🧠 Model: {model_name}")
         print(f"🌍 Language: {language or 'Auto-detect'}")
+        print(f"🎚️  VAD onset: {vad_onset} | offset: {vad_offset}")
+        print(f"🎯 Align: {'Yes' if align_output else 'No'} | Diarize: {'Yes' if enable_diarization else 'No'}")
         print("-" * 50)
     
     # 1. Cargar modelo y transcribir
@@ -80,7 +87,11 @@ def transcribe_audio(
         model_name,
         device=device,
         compute_type=compute_type,
-        language=language
+        language=language,
+        vad_options={
+            "vad_onset": vad_onset,
+            "vad_offset": vad_offset
+        }
     )
     
     audio = whisperx.load_audio(audio_path)
@@ -303,8 +314,12 @@ Ejemplos de uso:
     parser.add_argument("--compute-type", default="float16",
                        choices=["float16", "int8", "float32"],
                        help="Tipo de computación (default: float16)")
-    parser.add_argument("--no-align", action="store_true",
-                       help="Deshabilitar alineación de timestamps")
+    parser.add_argument("--vad-onset", type=float, default=0.500,
+                       help="Umbral de inicio de voz (0.0-1.0, default: 0.500)")
+    parser.add_argument("--vad-offset", type=float, default=0.363,
+                       help="Umbral de fin de voz (0.0-1.0, default: 0.363)")
+    parser.add_argument("--align", action="store_true",
+                       help="Activar alineación de timestamps (más lento pero más preciso)")
     parser.add_argument("--diarize", action="store_true",
                        help="Activar diarización de hablantes")
     parser.add_argument("--hf-token", default=None,
@@ -331,7 +346,9 @@ Ejemplos de uso:
             batch_size=args.batch_size,
             language=args.language,
             task=args.task,
-            align_output=not args.no_align,
+            vad_onset=args.vad_onset,
+            vad_offset=args.vad_offset,
+            align_output=args.align,
             enable_diarization=args.diarize,
             hf_token=args.hf_token,
             min_speakers=args.min_speakers,
